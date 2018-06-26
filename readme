@@ -1,0 +1,21 @@
+# tri-gram tool
+
+# files:
+    train_use_trigram_tool/
+        |-- readme
+        |-- train.sh           # shell to train trigram model
+        |-- vocab.py           # static vocabulary
+        |-- trigram.py         # train trigram model
+        |-- __init__.py
+        |-- tool.py            # API class to use trained model
+        |-- model/
+             |-- trigram.pkl   # model file
+             |-- vocab.txt     # vocabulary
+
+# API function:
+    log_probability_sentence(sentence)
+
+    Return the log-probability of the given sentence based on tri-gram language model.
+    Modefied Kneser-Ney smoothing method is used. 
+    (https://people.eecs.berkeley.edu/~klein/cs294-5/chen_goodman.pdf)
+
