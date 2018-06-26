@@ -1,5 +1,7 @@
-#encoding=utf-8
+# encoding=utf-8
 
+import os
+import sys
 import math
 import jieba
 import cPickle as pickle
@@ -9,8 +11,9 @@ class Trigram:
 
     def __init__(self):
         print 'initializing tri-gram model.'
-        self.model_path = './model/trigram.pkl'
-        self.voc_path = './model/vocab.txt'
+        pwd = os.path.dirname(__file__)
+        self.model_path = os.path.join(pwd, 'model/trigram.pkl')
+        self.voc_path = os.path.join(pwd, 'model/vocab.txt')
 
         # help words
         self.unk_word = '<unk>'
@@ -53,12 +56,13 @@ class Trigram:
 
     def log_probability_sentence(self, sentence):
         """
-        Compute the log-probability of the given sentence
-            based on tri-gram language model.
+        Compute the averaged-log-probability of the 
+        given sentence based on tri-gram language model.
+
         Arg:
             sentence: The given sentence.
         Return:
-            The log-probability of the given sentence.
+            log(p(sentence)) / words_num
         """
         sentence = ''.join(sentence.split())
         words = jieba.lcut(sentence)

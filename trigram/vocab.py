@@ -19,7 +19,7 @@ def w2fSortKey(elem):
     return elem[1]
 
 # main
-print '\n\nVOCAB COUNT.'
+print '\n\nVOCAB'
 
 ## params
 args = argparse.ArgumentParser('Input Parameters.')
@@ -39,7 +39,7 @@ for line in iFile:
     if 0 == idx % 10000:
         sys.stdout.write('%dw lines processed\r' % (idx/10000))
         sys.stdout.flush()
-    if idx > 100: break # debug
+    #if idx > 100: break # debug
 
 ## output the first N words
 ### trans to list and sort

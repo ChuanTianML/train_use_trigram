@@ -97,7 +97,7 @@ def updateGramBaseSentence(sent):
 
 
 # main
-print '\n\nN-GRAM.'
+print '\n\nTRIGRAM.'
 ## params
 args = argparse.ArgumentParser('Input Parameters.')
 args.add_argument('-iPath', type=str, dest='iPath', help='corpus file path.')
@@ -173,6 +173,6 @@ print 'ug2n, ug2nR and bg2n: <unk> related items averaged.'
 triGramFile = open(args.triGramPath, 'wb')
 pickle.dump((ug2f, bg2f, tg2f, ug2n, ug2nR, bg2n), triGramFile, pickle.HIGHEST_PROTOCOL)
 triGramFile.close()
-print('trigram dumped to %s.' % args.triGramPath)
+print('model is dumped to %s.' % args.triGramPath)
 
 
