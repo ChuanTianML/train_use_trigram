@@ -64,15 +64,40 @@ class Trigram:
         Return:
             log(p(sentence)) / words_num
         """
+        word_ids = self.preproc_sentence(sentence)
+        res = 0.0
+        for i in range(len(word_ids)-2):
+            res += self.log_probability_word_given_two_words(word_ids[i], word_ids[i+1], word_ids[i+2])
+        return res/(len(word_ids)-2)
+
+        
+    def log_probability_sentence_end(self, sentence):
+        """
+        Compute the log-probability of the end of a sentence.
+        Arg:
+            sentence: The given sentence.
+        Return: 
+            the log-probability
+        """
+        word_ids = self.preproc_sentence(sentence)
+        res = self.log_probability_word_given_two_words(word_ids[-3], word_ids[-2], word_ids[-1])
+        return res
+
+
+    def preproc_sentence(self, sentence):
+        """
+        Recut the sentence, add help words(<s1>,<s2>,</tail>), and transform to word ids.
+        Arg: 
+            sentence: the given sentence.
+        Return:
+            word ids
+        """
         sentence = ''.join(sentence.split())
         words = jieba.lcut(sentence)
         words = [w.encode('utf-8') for w in words]
         words = [self.frt_word, self.scd_word] + words + [self.lst_word]
         word_ids = [self.word2id(w, self.w2id) for w in words]
-        res = 0.0
-        for i in range(len(word_ids)-2):
-            res += self.log_probability_word_given_two_words(word_ids[i], word_ids[i+1], word_ids[i+2])
-        return res/(len(word_ids)-2)
+        return word_ids
 
     def log_probability_word_given_two_words(self, widl, widm, widr):
         xijk = 0.0
