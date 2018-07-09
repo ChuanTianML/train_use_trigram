@@ -1,4 +1,6 @@
 # tri-gram tool
+    Modefied Kneser-Ney smoothing method is used. 
+    https://people.eecs.berkeley.edu/~klein/cs294-5/chen_goodman.pdf
 
 # files:
     trigram/
@@ -19,10 +21,10 @@
 # use
     ## api function
     log_probability_sentence(sentence)
-
     Return the averaged-log-probability of the given sentence based on tri-gram language model.
-    Modefied Kneser-Ney smoothing method is used. 
-    https://people.eecs.berkeley.edu/~klein/cs294-5/chen_goodman.pdf
+
+    log_probability_whether_sentence_ends(sentence)
+    Return the ending log-probability of the given sentence based on tri-gram language model.
 
     ## demo
     ## ----------------------------------------------------
