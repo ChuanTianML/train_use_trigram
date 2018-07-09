@@ -60,5 +60,5 @@ else:
 
 vocFile.close()
 iFile.close()
-print('output %d words including <unk>.' % (min(args.vocSize, len(w2fLs)+1)))
+print('output %d words including <unk>.' % (min(args.vocSize, len(w2fLs))+1))
 
