@@ -1,14 +1,16 @@
 # encoding=utf-8
 
 import sys
-import jieba
 import argparse
 
 
 # functions
 def updateVocabBaseSentence(sent):
-    sent = ''.join(sent.split())
-    ws = [w.encode('utf-8') for w in jieba.lcut(sent)]
+    if 1==args.recut:
+        sent = ''.join(sent.split())
+        ws = [w.encode('utf-8') for w in jieba.lcut(sent)]
+    else:
+        ws = sent.split()
     for w in ws:
         if w in w2f:
             w2f[w] += 1
@@ -26,9 +28,13 @@ args = argparse.ArgumentParser('Input Parameters.')
 args.add_argument('-iPath', type=str, dest='iPath', help='corpus file path.')
 args.add_argument('-oPath', type=str, dest='oPath', help='vocabulary file output path.')
 args.add_argument('-vocSize', type=int, dest='vocSize', help='the max size of the vocab.')
+args.add_argument('-recut', type=int, dest='recut', help='whether recut using jieba.')
 args = args.parse_args()
 unkWord = '<unk>'
 w2f = {}
+if 1==args.recut:
+    import jieba
+
 
 ## extract words and frequency
 iFile = open(args.iPath, 'r')

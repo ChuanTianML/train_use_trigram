@@ -1,7 +1,6 @@
 # encoding=utf-8
 
 import sys
-import jieba
 import argparse
 import cPickle as pickle
 
@@ -25,8 +24,11 @@ def staticUnk(wid1, wid2, wid3, w1, w2, w3):
             unkCmb2NumTg[tgKey] = set([wsCmbTg])
 
 def updateGramBaseSentence(sent):
-    sent = ''.join(sent.split())
-    ws = [w.encode('utf-8') for w in jieba.lcut(sent)]
+    if 1==args.recut:
+        sent = ''.join(sent.split())
+        ws = [w.encode('utf-8') for w in jieba.lcut(sent)]
+    else:
+        ws = sent.split()
     ws = [frtWord,scdWord] + ws + [lstWord]
     wids = [word2id(w) for w in ws]
     for i in range(len(ws)-2):
@@ -42,7 +44,10 @@ args = argparse.ArgumentParser('Input Parameters.')
 args.add_argument('-iPath', type=str, dest='iPath', help='corpus file path.')
 args.add_argument('-vocPath', type=str, dest='vocPath', help='vocabulary file path.')
 args.add_argument('-triGramPath', type=str, dest='triGramPath', help='tri-gram dump path.')
+args.add_argument('-recut', type=int, dest='recut', help='whether recut using jieba.')
 args = args.parse_args()
+if 1==args.recut:
+    import jieba
 
 w2id = {}   # word to id; id start from 0.
 tg2f = {}   # tri-gram. ((wid1, wid2, wid3): freq)

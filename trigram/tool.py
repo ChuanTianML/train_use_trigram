@@ -4,6 +4,7 @@ import os
 import sys
 import math
 import jieba
+import logging
 import cPickle as pickle
 
 api_methods = [
@@ -13,14 +14,15 @@ api_methods = [
 
 class Trigram:
 
-    def __init__(self):
+    def __init__(self, model_size='base', cut=True):
         print 'start initializing tri-gram model.'
         pwd = os.path.dirname(__file__)
-        self.model_path = os.path.join(pwd, 'model/trigram.pkl')
-        self.voc_path = os.path.join(pwd, 'model/vocab.txt')
+        self.model_path = os.path.join(pwd, ('model/%s/trigram.pkl' % model_size))
+        self.voc_path = os.path.join(pwd, ('model/%s/vocab.txt' % model_size))
+        self.cut = cut
 
         # debug
-        self.err_file = open('error.txt', 'w')
+        #self.err_file = open('error.txt', 'w')
 
         # help words
         self.unk_word = '<unk>'
@@ -37,12 +39,12 @@ class Trigram:
         for line in voc_file:
             w,_ = line.strip().split('\t')
             self.w2id[w] = idx
-            self.id2w[idx] = w # debug
+            #self.id2w[idx] = w # debug
             idx += 1
         help_words = [self.frt_word, self.scd_word, self.lst_word]
         for w in help_words:
             self.w2id[w] = idx
-            self.id2w[idx] = w # debug
+            #self.id2w[idx] = w # debug
             idx += 1
         print('%d words loaded.' % len(self.w2id))
 
@@ -82,7 +84,7 @@ class Trigram:
         Arg:
             sentence: The given sentence.
         Return: 
-            the log-probability
+            the log-probability of sentence ending.
         """
         word_ids = self.__preproc_sentence(sentence)
         res = self.__log_probability_word_given_two_words(word_ids[-3], word_ids[-2], word_ids[-1])
@@ -92,17 +94,42 @@ class Trigram:
     def __preproc_sentence(self, sentence):
         """
         Recut the sentence, add help words(<s1>,<s2>,</tail>), and transform to word ids.
+        Recut: 1.use jieba cut; 2.cut unk words to characters.
         Arg: 
             sentence: the given sentence.
         Return:
             word ids
         """
-        sentence = ''.join(sentence.split())
-        words = jieba.lcut(sentence)
-        words = [w.encode('utf-8') for w in words]
+        # cut using jieba
+        if self.cut:
+            sentence = ''.join(sentence.split())
+            words = jieba.lcut(sentence)
+            words = [w.encode('utf-8') for w in words]
+        else:
+            words = sentence.split()
+
+        # cut unk words
+        tmp_words = []
+        for w in words:
+            if w in self.w2id:
+                tmp_words.append(w)
+            else:
+                tmp_words += self.__cut_unk_word(w)
+        words = tmp_words
+
+        # add helping words
         words = [self.frt_word, self.scd_word] + words + [self.lst_word]
         word_ids = [self.__word2id(w, self.w2id) for w in words]
+
         return word_ids
+
+    def __cut_unk_word(self, w):
+        """ Cut a word to characters.
+        """
+        cs = []
+        for c in unicode(w.strip(), 'utf-8'):
+            cs.append(c.encode('utf-8'))
+        return cs
 
     def __compute_help_variables(self):
         """ 1. bi-gram and uni-gram
@@ -244,13 +271,13 @@ class Trigram:
             probability_discounted = (xijk-delta) / xij_
             lmda = (self.tgD1*nij_once + self.tgD2*nij_twice + self.tgD3*nij_other) / xij_
         res = probability_discounted + lmda * self.__probability_word_given_word(widm, widr)
-        try: # debug
-            assert res <= 1.0
-        except AssertionError, e:
-            err_line =  ('w1 %s, w2 %s, w3 %s, xijk %f, xij_ %f, delta %f, probability_discounted %f, nij_once %f, nij_twice %f, nij_other %f, lmda %f, res_prob %f' % 
-                        (self.id2w[widl], self.id2w[widm], self.id2w[widr], xijk, xij_, delta, probability_discounted, nij_once, nij_twice, nij_other, lmda, res) )
-            self.err_file.write(err_line+'\n')
-            print err_line
+        #try: # debug
+        #    assert res <= 1.0
+        #except AssertionError, e:
+        #    err_line =  ('w1 %s, w2 %s, w3 %s, xijk %f, xij_ %f, delta %f, probability_discounted %f, nij_once %f, nij_twice %f, nij_other %f, lmda %f, res_prob %f' % 
+        #                (self.id2w[widl], self.id2w[widm], self.id2w[widr], xijk, xij_, delta, probability_discounted, nij_once, nij_twice, nij_other, lmda, res) )
+        #    self.err_file.write(err_line+'\n')
+        #    print err_line
         #assert not 0.0 == res
         if 0.0 == res: res = self.appr_zero
         return math.log(res)
@@ -285,13 +312,13 @@ class Trigram:
             probability_discounted = (xij-delta) / xi_
             lmda = (self.bgD1*ni_once + self.bgD2*ni_twice + self.bgD3*ni_other) / xi_
         res = probability_discounted + lmda * self.__probability_word(widr)
-        try: # debug
-            assert res <= 1.0
-        except AssertionError, e:
-            err_line =  ('w1 %s, w2 %s, xij %f, xi_ %f, delta %f, probability_discounted %f, ni_once %f, ni_twice %f, ni_other %f, lmda %f, res_prob %f' % 
-                        (self.id2w[widl], self.id2w[widr], xij, xi_, delta, probability_discounted, ni_once, ni_twice, ni_other, lmda, res) )
-            self.err_file.write(err_line + '\n')
-            print err_line
+        #try: # debug
+        #    assert res <= 1.0
+        #except AssertionError, e:
+        #    err_line =  ('w1 %s, w2 %s, xij %f, xi_ %f, delta %f, probability_discounted %f, ni_once %f, ni_twice %f, ni_other %f, lmda %f, res_prob %f' % 
+        #                (self.id2w[widl], self.id2w[widr], xij, xi_, delta, probability_discounted, ni_once, ni_twice, ni_other, lmda, res) )
+        #    self.err_file.write(err_line + '\n')
+        #    print err_line
         return res
 
     def __probability_word(self, wid):
